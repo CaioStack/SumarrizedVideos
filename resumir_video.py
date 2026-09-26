@@ -16,8 +16,6 @@ Requisitos:
     - Ollama instalado e rodando (https://ollama.com), com um modelo baixado
       (ex: ollama pull llama3.1)
     - Dependências: pip install -r requirements.txt
-
-Desenvolvido por Caio Salgado Marques com auxílio de IA's e API'S
 """
 
 import argparse
