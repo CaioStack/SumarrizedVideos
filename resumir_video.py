@@ -17,7 +17,7 @@ Requisitos:
       (ex: ollama pull llama3.1)
     - Dependências: pip install -r requirements.txt
 
-Autor: gerado com auxílio do Claude
+Desenvolvido por Caio Salgado Marques
 """
 
 import argparse
