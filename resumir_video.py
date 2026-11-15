@@ -196,6 +196,10 @@ def main():
         try:
             caminho_audio, titulo = baixar_audio(args.url, pasta_tmp)
             texto = transcrever_audio(caminho_audio, args.modelo, idioma)
+            if not texto.strip():
+                raise ValueError(
+                    "Nenhuma fala foi reconhecida no áudio; não há conteúdo para resumir."
+                )
 
             if args.salvar_transcricao:
                 Path(args.salvar_transcricao).write_text(texto, encoding="utf-8")
