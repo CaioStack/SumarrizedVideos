@@ -24,7 +24,7 @@ import tempfile
 from pathlib import Path
 
 
-def baixar_audio(url: str, pasta_destino: Path) -> Path:
+def baixar_audio(url: str, pasta_destino: Path) -> tuple[Path, str]:
     """Baixa apenas o áudio do vídeo do YouTube usando yt-dlp e converte para wav."""
     import yt_dlp
 
