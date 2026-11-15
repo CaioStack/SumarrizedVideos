@@ -43,15 +43,28 @@ def dividir_texto(texto: str, limite: int = 12_000) -> list[str]:
     return partes
 
 
-def baixar_audio(url: str, pasta_destino: Path) -> tuple[Path, str]:
+def baixar_audio(
+    url: str,
+    pasta_destino: Path,
+    max_duration_seconds: int | None = None,
+) -> tuple[Path, str]:
     """Baixa apenas o áudio do vídeo do YouTube usando yt-dlp e converte para wav."""
     import yt_dlp
 
     saida_template = str(pasta_destino / "audio.%(ext)s")
 
+    def validar_duracao(info, *, incomplete=False):
+        duracao = info.get("duration")
+        if max_duration_seconds and duracao and duracao > max_duration_seconds:
+            minutos = max_duration_seconds // 60
+            return f"Este vídeo ultrapassa o limite de {minutos} minutos."
+        return None
+
     opcoes = {
         "format": "bestaudio/best",
         "outtmpl": saida_template,
+        "noplaylist": True,
+        "match_filter": validar_duracao,
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",
