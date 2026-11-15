@@ -93,27 +93,3 @@ python resumir_video.py "https://youtu.be/XXXXXXX" \
    escolhido localmente e devolve um resumo estruturado, impresso no
    terminal.
 
-## Observações
-
-- Modelos Whisper maiores (`medium`, `large`) são mais precisos, mas exigem
-  mais RAM/CPU e demoram mais para transcrever.
-- **Vídeos com mais de ~30 minutos podem travar ou dar erro em computadores
-  mais fracos** (sem GPU dedicada, com pouca RAM, ou CPU de entrada/
-  intermediária). A transcrição e o resumo de vídeos longos exigem bastante
-  processamento e memória de uma vez só. Se isso acontecer, tente: usar um
-  modelo Whisper menor (`--modelo tiny` ou `--modelo base`), usar um modelo
-  do Ollama mais leve, ou testar com vídeos mais curtos primeiro.
-- A transcrição usa `faster-whisper`, que roda bem em CPU e não baixa as
-  bibliotecas pesadas de GPU (CUDA) que o pacote `openai-whisper` original
-  costuma puxar como dependência (isso pode facilmente passar de alguns GB
-  e estourar cota de disco em ambientes com pouco espaço).
-- Vídeos muito longos podem gerar uma transcrição maior do que a janela de
-  contexto do modelo do Ollama consegue processar de uma vez (o `llama3.1`
-  padrão costuma vir configurado para ~8.000 tokens). Nesse caso o resumo
-  pode sair incompleto — se isso acontecer com frequência, dá pra adaptar
-  o script para dividir a transcrição em pedaços.
-- A velocidade do resumo depende do hardware do seu computador (CPU/GPU),
-  já que o modelo roda localmente.
-- Nenhum arquivo de áudio fica salvo em disco após a execução (é usado um
-  diretório temporário), a menos que você use `--salvar-transcricao` para
-  guardar o texto.
