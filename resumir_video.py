@@ -24,6 +24,25 @@ import tempfile
 from pathlib import Path
 
 
+def dividir_texto(texto: str, limite: int = 12_000) -> list[str]:
+    """Divide o texto em partes limitadas, preservando palavras inteiras."""
+    partes = []
+    atual = ""
+
+    for palavra in texto.split():
+        if len(palavra) > limite:
+            palavra = palavra[:limite]
+        if atual and len(atual) + len(palavra) + 1 > limite:
+            partes.append(atual)
+            atual = palavra
+        else:
+            atual = f"{atual} {palavra}".strip()
+
+    if atual:
+        partes.append(atual)
+    return partes
+
+
 def baixar_audio(url: str, pasta_destino: Path) -> tuple[Path, str]:
     """Baixa apenas o áudio do vídeo do YouTube usando yt-dlp e converte para wav."""
     import yt_dlp
@@ -89,38 +108,54 @@ def resumir_texto(texto: str, titulo: str, modelo: str = "llama3.1") -> str:
 
     print(f"[3/3] Gerando resumo localmente com Ollama (modelo: {modelo})...")
 
-    prompt = f"""Você recebeu a transcrição automática (pode conter pequenos erros) de um vídeo do YouTube chamado "{titulo}".
+    def gerar(prompt: str) -> str:
+        try:
+            resposta = requests.post(
+                "http://localhost:11434/api/generate",
+                json={"model": modelo, "prompt": prompt, "stream": False},
+                timeout=600,
+            )
+            resposta.raise_for_status()
+        except requests.exceptions.ConnectionError:
+            raise ConnectionError(
+                "Não foi possível conectar ao Ollama em http://localhost:11434. "
+                "Verifique se o Ollama está instalado e rodando (abra o app ou "
+                "rode 'ollama serve'), e se o modelo foi baixado com: "
+                f"ollama pull {modelo}"
+            )
+        return resposta.json()["response"].strip()
+
+    partes = dividir_texto(texto)
+    if len(partes) > 1:
+        resumos_parciais = []
+        for indice, parte in enumerate(partes, start=1):
+            prompt_parcial = f"""Resuma em português os principais pontos desta parte ({indice}/{len(partes)}) da transcrição do vídeo "{titulo}". Preserve informações importantes e não invente dados.
+
+Transcrição:
+\"\"\"
+{parte}
+\"\"\""""
+            resumos_parciais.append(gerar(prompt_parcial))
+
+        texto_para_resumir = "\n\n".join(resumos_parciais)
+        contexto = "resumos das partes da transcrição"
+    else:
+        texto_para_resumir = texto
+        contexto = "transcrição automática (pode conter pequenos erros)"
+
+    prompt = f"""Você recebeu {contexto} de um vídeo do YouTube chamado "{titulo}".
 
 Gere um resumo em português contendo:
 1. Um resumo geral em até 5 frases.
 2. Os principais pontos/tópicos abordados, em bullets.
 3. Se houver, conclusões, recomendações ou chamadas para ação mencionadas no vídeo.
 
-Transcrição:
+Conteúdo:
 \"\"\"
-{texto}
+{texto_para_resumir}
 \"\"\""""
 
-    try:
-        resposta = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": modelo,
-                "prompt": prompt,
-                "stream": False,
-            },
-            timeout=600,
-        )
-        resposta.raise_for_status()
-    except requests.exceptions.ConnectionError:
-        raise ConnectionError(
-            "Não foi possível conectar ao Ollama em http://localhost:11434. "
-            "Verifique se o Ollama está instalado e rodando (abra o app ou "
-            "rode 'ollama serve'), e se o modelo foi baixado com: "
-            f"ollama pull {modelo}"
-        )
-
-    return resposta.json()["response"].strip()
+    return gerar(prompt)
 
 
 def main():
