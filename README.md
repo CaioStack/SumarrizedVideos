@@ -7,7 +7,7 @@ por uso.
 
 ## Pré-requisitos
 
-1. **Python 3.9+**
+1. **Python 3.10+**
 2. **ffmpeg** instalado no sistema (o `yt-dlp` precisa dele para extrair o áudio):
    - Ubuntu/Debian: `sudo apt install ffmpeg`
    - macOS (Homebrew): `brew install ffmpeg`

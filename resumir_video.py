@@ -11,7 +11,7 @@ Uso:
     python resumir_video.py "URL" --modelo small --idioma pt
 
 Requisitos:
-    - Python 3.9+
+    - Python 3.10+
     - ffmpeg instalado no sistema (necessário para o yt-dlp extrair áudio)
     - Ollama instalado e rodando (https://ollama.com), com um modelo baixado
       (ex: ollama pull llama3.1)
